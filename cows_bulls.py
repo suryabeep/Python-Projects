@@ -10,8 +10,14 @@ for i in range(4):
 while not done:
     cows = 0
     bulls = 0
-    user_num = input("Enter a 4-digit number")
+    user_num = input("Enter a 4-digit number, or QQQ to quit")
     user_num = user_num.strip()
+    if user_num == "QQQ" or user_num == "qqq":
+        out = ""
+        for i in digits:
+            out += str(i)
+        print("The number was {0}".format(out))
+        sys.exit("Game over")
     try:
         user_num = int(user_num)
     except:
@@ -20,6 +26,7 @@ while not done:
     if user_num < 1000 or user_num > 9999:
         print("Number is not 4 digits long. Try again.")
         continue
+
     user_digits = []
     for i in range(4):
         digit = user_num % 10
