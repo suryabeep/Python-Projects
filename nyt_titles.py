@@ -39,13 +39,13 @@ def send_mail():
     sender = "suryadippython@gmail.com"
     sender_pw = get_pw()
     print(sender_pw)
-    receiver = "sband2000@gmail.com"
+    receivers = ["sband2000@gmail.com", "ainesh01@gmail.com",
+                 "rahanarasteh22@gmail.com"]
     subject = "Today's NYT Headlines"
     body = ''
     titles = get_titles()
     for title in titles:
         body += title + "\n"
-    # print("Body is: \n{0}".format(body))
     body = "Subject: {}\n\n{}".format(subject, body)
     body = body.encode("utf-8")
 
@@ -53,16 +53,16 @@ def send_mail():
     server.ehlo()
     server.starttls()
     server.login(sender, sender_pw)
-    server.sendmail(sender, receiver, body)
+    server.sendmail(sender, receivers, body)
     server.close()
     print("\nemail sent!")
 
 
-schedule.every().day.at("18:17").do(send_mail())
-
+schedule.every().day.at("18:51").do(send_mail)
+print("mail scheduled")
 while 1:
     schedule.run_pending()
-    time.sleep(86400)
+    time.sleep(1)
 
 
 
