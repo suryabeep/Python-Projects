@@ -14,27 +14,38 @@ def get_titles():
     url = 'http://www.nytimes.com'
     page = requests.get(url)
     soup = BeautifulSoup(page.text, 'html.parser')
-    text_file = "nyt_titles.txt"
     for heading in soup.find_all("h2"):
         titles.append(heading.text)
+    # take out the NYT extra h2 elements
     titles = titles[3: len(titles)-2]
+    # This next block does the save-to-file stuff.
+    # Delete if file-saving is no longer needed
+    text_file = "nyt_titles.txt"
     with open(text_file, 'w') as f:
         for title in titles:
             f.write(title + "\n")
     return titles
 
 
+def get_pw():
+    with open("/Users/Suryadip/pw.txt", "r") as file:
+        pw = file.readlines()
+    pw = pw[0]
+    pw.replace("\n", "")
+    return pw
+
+
 def send_mail():
     sender = "suryadippython@gmail.com"
-    # please don't mess with this email :(
-    sender_pw = "pythoniscool@"
+    sender_pw = get_pw()
+    print(sender_pw)
     receiver = "sband2000@gmail.com"
     subject = "Today's NYT Headlines"
     body = ''
     titles = get_titles()
     for title in titles:
         body += title + "\n"
-    print("Body is: \n{0}".format(body))
+    # print("Body is: \n{0}".format(body))
     body = "Subject: {}\n\n{}".format(subject, body)
     body = body.encode("utf-8")
 
