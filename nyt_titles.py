@@ -26,6 +26,7 @@ def get_titles():
 
 def send_mail():
     sender = "suryadippython@gmail.com"
+    # please don't mess with this email :(
     sender_pw = "pythoniscool@"
     receiver = "sband2000@gmail.com"
     subject = "Today's NYT Headlines"
