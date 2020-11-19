@@ -9,8 +9,8 @@ I have to do this for my CS 225 final project but in C++, and I was bored so I d
 1. Clone this repo to somewhere on your machine. Let's call this 'wiki_game/'
 2. Download the wiki-topcats.txt and wiki-topcats-page-names.txt files from http://snap.stanford.edu/data/wiki-topcats.html
 3. Place those two files in the wiki_game/data directory
-4. Run 'python3 wiki_game.py'
+4. Run 'python3 wiki_game.py --names data/wiki-topcats-page-names.txt --edges data/wiki-topcats.txt'
 
 <b><u>To-Do:</u></b><br>
-1. Convert the hard-coded filepaths to params, or add functionality to let the user input the paths they want.
+1. Add nearest-match suggestions if the user entered an article that wasn't in the graph.
 2. Add function to save the graph on quit and load an existing graph.
