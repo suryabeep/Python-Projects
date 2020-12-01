@@ -1,20 +1,38 @@
-from bs4 import BeautifulSoup
+import os
+from selenium import webdriver
+import time
 import requests
-import argparse
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import json
-import os.path
+from bs4 import BeautifulSoup
 from tqdm import tqdm
+import argparse
 
 def scrape_criterion():
+    options = Options()
+    options.headless = True
+    driver_path = '/Users/Suryadip/chromedriver'
     lists_home_url = 'https://www.criterion.com/current/category/8-top-10-lists'
+    driver = webdriver.Chrome(executable_path=driver_path, options=options)
+    driver.get(lists_home_url)
 
-    response = requests.get(lists_home_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    top_tens_links = [div.get('data-href') for div in soup.find_all('div', class_="more-article")]
+    # press the load more button 9 times (there are 10 pages)
+    for i in range(9):
+        load_more = driver.find_elements_by_class_name("linkbut_plain")
+        lists = driver.find_elements_by_class_name('more-article')
+        print('Number of results at iteration #', i, ": ", len(lists))
+        load_more[0].click()
+        time.sleep(1)
+
+    links = [div.get_attribute('data-href') for div in driver.find_elements_by_class_name('more-article')]
+    print('Total results: ', len(links))
+    links = list(set(links))
+    print('Number of results after removing duplicates: ', len(links))
 
     all_films = {}
     print("Going through each Top 10 List:")
-    for link in tqdm(top_tens_links):
+    for link in tqdm(links):
         response = requests.get(link)
         soup = BeautifulSoup(response.text, 'html.parser')
         name = soup.find_all('h1')[0].contents[0]
@@ -32,21 +50,46 @@ def scrape_criterion():
             else:
                 all_films[title]["names"].append(name)
                 all_films[title]["count"] += 1
-    
+            
     return all_films
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument('--count', required=True, help='Print movies that were picked by <count> or more people')
-    count = int(vars(ap.parse_args())['count'])
-    
+    ap.add_argument('--count', required=False, help='Print movies that were picked by <count> or more people')
+    ap.add_argument('--info', required=False, help='Print information on this film.')
+    count = vars(ap.parse_args())['count']
+    if count is not None:
+        count = int(count)
+    title = vars(ap.parse_args())['info']
+    if title is not None:
+        title = str(title)
+
     if not os.path.isfile('films.json'):
         all_films = scrape_criterion()
+        sorted_films = [all_films[key] for key in sorted(all_films, key=lambda item:all_films[item]['count'], reverse=True)]
         with open("films.json", "w") as outfile:  
-            json.dump(all_films, outfile) 
+            json.dump(sorted_films, outfile) 
         
     with open("films.json", "r") as infile:
-        all_films = json.load(infile)
-        for film in all_films:
-            if all_films[film]["count"] >= count:
-                print(all_films[film])
+        sorted_films = json.load(infile)
+        # info mode
+        if title is not None:
+            films = {film['title']: film for film in sorted_films}
+            print('Title:', films[title]['title'])
+            print('Director:', films[title]['director'])
+            print('Count:', films[title]['count'])
+            chosen = ''
+            for person in films[title]['names']:
+                chosen += person + ', '
+            chosen = chosen[ : -2]
+            print('Chosen By:', chosen)
+        if count is not None and title is not None:
+            print()
+        # count mode
+        if count is not None:
+            print("Films chosen by over", count, "people were:")
+            for film in sorted_films:
+                if film['count'] >= count:
+                    print(film['title'])
+                else:
+                    break
